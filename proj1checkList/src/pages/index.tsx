@@ -64,6 +64,8 @@ const Content: React.FC = () => {
     if (inputRef.current?.value) {
       await createTask.mutateAsync({
         title: inputRef.current.value,
+      }).catch(error => {
+        console.error("Failed to add task:", error);
       });
       refetchTasks();
       inputRef.current.value = ""; // Clear the input after adding the task
