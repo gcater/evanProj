@@ -106,6 +106,9 @@ const TaskManager: React.FC = () => {
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
+            {/* optional chaining is good */}
+            {/* remap cpas lock to control */}
+            {/* command p, ctrl tilda, command shift bracket */}
             {tasks?.map((task, index) => (
               <tr key={index}>
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{task.title}</td>
