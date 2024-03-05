@@ -24,8 +24,8 @@ export default function Home() {
     
         </header>
        
-        <InputDemo />
-        <Content />
+        <TaskManager />
+        
       </main>
       
     </div>
@@ -55,46 +55,68 @@ function AuthShowcase() {
     </div>
   );
 }
-const Content: React.FC = () => {
+
+const TaskManager: React.FC = () => {
   const { data: sessionData } = useSession();
+  const [task, setTask] = React.useState(""); // State to hold the input value
+
+  // Fetch tasks
   const { data: tasks, refetch: refetchTasks } = api.task.getAll.useQuery(
     undefined, // no input
     { enabled: sessionData?.user !== undefined }
   );
-  return (
-    <div>
-      {JSON.stringify(tasks)}
-    </div>
-  );
+  
 
-};
-
-export function InputDemo(){
-  const [task, setTask] = React.useState(""); // State to hold the input value
-  // Function to update state based on input changes
-  const createTask = api.task.create.useMutation({});
+  // Create task mutation
+  const createTask = api.task.create.useMutation({
+    onSuccess: () => {
+      refetchTasks(); // Refetch tasks after a successful creation
+      const tasksArray = tasks ? Object.values(tasks) : [];
+    }
+  });
+  // Handle input change
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setTask(event.target.value);
   };
-  // Example function to use the input text for a purpose (e.g., logging it)
+
+  // Handle submit
   const handleSubmit = () => {
-    //console.log("Submitted email:", email);
     createTask.mutate({
       title: task
-    })
-    // Here you can add more logic to use the email, like sending it to an API
+    });
+    setTask(""); // Clear input after submission
   };
+
   return (
     <div>
-      <Input 
-        type="task" 
-        placeholder="Task" 
-        value={task} // Bind input value to state
-        onChange={handleInputChange} // Update state on input change
-      />
-      <button onClick={handleSubmit}>Submit</button> {/* Example usage of the input text */}
-     
+      <div>
+        <Input 
+          type="text" // Changed from "task" to "text" as "task" is not a valid input type
+          placeholder="Task" 
+          value={task} 
+          onChange={handleInputChange}
+        />
+        <button onClick={handleSubmit}>Submit</button>
+      </div>
+      <div>
+        <table className="min-w-full divide-y divide-gray-200">
+          <thead className="bg-gray-50">
+            <tr>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Task</th>
+            </tr>
+          </thead>
+          <tbody className="bg-white divide-y divide-gray-200">
+            {tasks && tasks.map((task, index) => (
+              <tr key={index}>
+                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{task.title}</td>
+        
+              </tr>
+            ))}
+          </tbody>
+      </table>
+
+
+      </div>
     </div>
   );
-}
-
+};
