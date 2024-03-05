@@ -24,6 +24,18 @@ export const taskRouter = createTRPCRouter({
                 },
             });
         }),
+    
+    delete: protectedProcedure
+      .input(z.object({ id: z.string() }))
+      .mutation(({ ctx, input }) => {
+          return ctx.db.task.delete({
+              where: {
+                  id: input.id,
+                  userId: ctx.session.user.id, // Ensure the task belongs to the current user
+              },
+          });
+      }),
+        
 
-      
+     
 });
