@@ -70,7 +70,7 @@ const TaskManager: React.FC = () => {
   // Create task mutation
   const createTask = api.task.create.useMutation({
     onSuccess: () => {
-      refetchTasks(); // Refetch tasks after a successful creation
+      void refetchTasks(); // Refetch tasks after a successful creation
 
     }
   });
@@ -81,7 +81,7 @@ const TaskManager: React.FC = () => {
 
   // Handle submit
   const handleSubmit = () => {
-    createTask.mutate({
+    void createTask.mutate({
       title: task
     });
     setTask(""); // Clear input after submission
