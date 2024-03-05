@@ -4,6 +4,7 @@ import Head from "next/head";
 import React from "react";
 import { useRef } from "react";
 import { api } from "~/utils/api";
+import {Input} from "../components/ui/input"
 
 export default function Home() {
   //const hello = api.post.hello.useQuery({ text: "from tRPC" });
@@ -20,7 +21,10 @@ export default function Home() {
           <h1 className="text-xl">Welcome to T3 Checklist</h1>
 
           <AuthShowcase />
+    
         </header>
+       
+        <InputDemo />
         <Content />
       </main>
       
@@ -57,40 +61,40 @@ const Content: React.FC = () => {
     undefined, // no input
     { enabled: sessionData?.user !== undefined }
   );
-  const createTask = api.task.create.useMutation();
-
-  const inputRef = useRef<HTMLInputElement>(null);
-  const handleAddTask = async () => {
-    if (inputRef.current?.value) {
-      await createTask.mutateAsync({
-        title: inputRef.current.value,
-      }).catch(error => {
-        console.error("Failed to add task:", error);
-      });
-      refetchTasks();
-      inputRef.current.value = ""; // Clear the input after adding the task
-    }
-  };
-
   return (
-    <>
-      <input ref={inputRef} type="text" placeholder="Type a task..." className="border-2 border-gray-300 p-2 rounded-md" />
-      <button onClick={() =>handleAddTask} className="ml-2 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-        Add Task
-      </button>
-      <div>
-        {tasks && tasks.length > 0 ? (
-          <ul className="mt-4">
-            {tasks.map((task, index) => (
-              <li key={index} className="border-b border-gray-200 py-2">
-                {task.title}
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p className="mt-4">No tasks added yet.</p>
-        )}
-      </div>
-    </>
+    <div>
+      {JSON.stringify(tasks)}
+    </div>
   );
+
 };
+
+export function InputDemo(){
+  const [task, setTask] = React.useState(""); // State to hold the input value
+  // Function to update state based on input changes
+  const createTask = api.task.create.useMutation({});
+  const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setTask(event.target.value);
+  };
+  // Example function to use the input text for a purpose (e.g., logging it)
+  const handleSubmit = () => {
+    //console.log("Submitted email:", email);
+    createTask.mutate({
+      title: task
+    })
+    // Here you can add more logic to use the email, like sending it to an API
+  };
+  return (
+    <div>
+      <Input 
+        type="task" 
+        placeholder="Task" 
+        value={task} // Bind input value to state
+        onChange={handleInputChange} // Update state on input change
+      />
+      <button onClick={handleSubmit}>Submit</button> {/* Example usage of the input text */}
+     
+    </div>
+  );
+}
+
