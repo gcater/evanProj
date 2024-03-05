@@ -2,7 +2,7 @@ import { signIn, signOut, useSession } from "next-auth/react";
 import Head from "next/head";
 //import Link from "next/link";
 import React from "react";
-import { useRef } from "react";
+//import { useRef } from "react";
 import { api } from "~/utils/api";
 import {Input} from "../components/ui/input"
 
@@ -71,7 +71,7 @@ const TaskManager: React.FC = () => {
   const createTask = api.task.create.useMutation({
     onSuccess: () => {
       refetchTasks(); // Refetch tasks after a successful creation
-      const tasksArray = tasks ? Object.values(tasks) : [];
+
     }
   });
   // Handle input change
