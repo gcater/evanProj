@@ -1,8 +1,14 @@
+"use client"
 import { signIn, signOut, useSession } from "next-auth/react";
 import Head from "next/head";
 // import Link from "next/link";
 import React, { useState } from "react";
 import { api } from "~/utils/api";
+import {Button, useDragAndDrop, Item, ListView, useListData, defaultTheme, Provider} from '@adobe/react-spectrum';
+// import {, Provider} from '@adobe/react-spectrum';
+// import {Item, ListView, useListData, defaultTheme, Provider} from '@adobe/react-spectrum'
+// import { Task } from '@prisma/client'
+
 
 export default function Home() {
   return (
@@ -18,10 +24,28 @@ export default function Home() {
           <AuthShowcase />
         </header>
         <TaskManager/>
+        <App/>
+       
+
       </main>
     </>
   );
 }
+
+function App() {
+  return (
+    <Provider theme={defaultTheme}>
+      <DraggableList/>
+      <Button
+        variant="accent"
+        onPress={() => alert('Hey there!')}
+      >
+        Hello React Spectrum!
+      </Button>
+    </Provider>
+  );
+}
+
 
 function AuthShowcase() {
   const { data: sessionData } = useSession();
@@ -62,6 +86,7 @@ const TaskManager: React.FC = () => {
   // Create task mutation
   const createTask = api.task.create.useMutation({
     onSuccess: () => {
+      console.log(tasks)
       void refetchTasks(); // Refetch tasks after a successful creation
     },
   });
@@ -109,7 +134,7 @@ const TaskManager: React.FC = () => {
         {tasks?.map((task) => (
           <div key={task.id}>
             <span>{task.title}</span>
-            <button onClick={() => handleDelete(task.id)}>Delete</button>
+            <button style={{ marginLeft: '10px' }} onClick={() => handleDelete(task.id)}>Delete</button>
           </div>
         ))}
       </div>
@@ -118,3 +143,52 @@ const TaskManager: React.FC = () => {
 };
 
 
+
+
+interface ListItem {
+  id: string;
+  type: string;
+  name: string;
+}
+
+const DraggableList: React.FC = () => {
+  const list = useListData<ListItem>({
+    initialItems: [
+      { id: 'a', type: 'file', name: 'Adobe Photoshop' },
+      { id: 'b', type: 'file', name: 'Adobe XD' },
+      { id: 'c', type: 'file', name: 'Adobe Dreamweaver' },
+      { id: 'd', type: 'file', name: 'Adobe InDesign' },
+      { id: 'e', type: 'file', name: 'Adobe Connect' },
+    ],
+  });
+
+  const { dragAndDropHooks } = useDragAndDrop({
+    getItems: (keys) => Array.from(keys).map((key) => {
+      const item = list.getItem(key.toString());
+      return { 'adobe-app': JSON.stringify(item) };
+    }),
+
+    onDragEnd: (e) => {
+      if (e.dropOperation === 'move') {
+        list.remove(...e.keys);
+      }
+    },
+  });
+
+  return (
+    <ListView
+      aria-label="Draggable list view example"
+      width="size-3600"
+      height="size-3600"
+      selectionMode="multiple"
+      items={list.items}
+      dragAndDropHooks={dragAndDropHooks}
+    >
+      {(item) => (
+        <Item textValue={item.name}>
+          {item.name}
+        </Item>
+      )}
+    </ListView>
+  );
+};
