@@ -19,27 +19,20 @@ export default function Home() {
       <main>
         <header className="flex justify-between items-center p-5 bg-blue-500 text-white">
           <h1 className="text-xl">Welcome to T3 Checklist</h1>
-
           <AuthShowcase />
-    
         </header>
-       
         <TaskManager />
-        
-      </main>
-      
+      </main>  
     </div>
   );
 }
 
 function AuthShowcase() {
   const { data: sessionData } = useSession();
-
   const { data: secretMessage } = api.post.getSecretMessage.useQuery(
     undefined, // no input
     { enabled: sessionData?.user !== undefined }
   );
-
   return (
     <div className="flex flex-col items-center justify-center gap-4">
       <p className="text-center text-2xl text-white">
@@ -65,13 +58,10 @@ const TaskManager: React.FC = () => {
     undefined, // no input
     { enabled: sessionData?.user !== undefined }
   );
-  
-
   // Create task mutation
   const createTask = api.task.create.useMutation({
     onSuccess: () => {
       void refetchTasks(); // Refetch tasks after a successful creation
-
     }
   });
   // Handle input change
@@ -80,16 +70,28 @@ const TaskManager: React.FC = () => {
   };
 
   // Handle submit
-  const handleSubmit = () => {
+  const handleSubmit = (event: React.FormEvent) => {
+    event.preventDefault();
     void createTask.mutate({
       title: task
     });
     setTask(""); // Clear input after submission
   };
-
+  // delete task mutation
+  const deleteTask = api.task.delete.useMutation({
+    onSuccess: () => {
+      void refetchTasks(); // Refetch tasks after a successful creation
+    }
+  });
+  // handle Delete
+  const handleDelete = (taskId: string) => {
+    void deleteTask.mutate({
+      id: taskId
+    });
+  };
   return (
     <div>
-      <div>
+      <form onSubmit={handleSubmit}>
         <Input 
           type="text" // Changed from "task" to "text" as "task" is not a valid input type
           placeholder="Task" 
@@ -97,7 +99,7 @@ const TaskManager: React.FC = () => {
           onChange={handleInputChange}
         />
         <button onClick={handleSubmit}>Submit</button>
-      </div>
+      </form>
       <div>
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
@@ -106,19 +108,21 @@ const TaskManager: React.FC = () => {
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {/* optional chaining is good */}
-            {/* remap cpas lock to control */}
-            {/* command p, ctrl tilda, command shift bracket */}
             {tasks?.map((task, index) => (
               <tr key={index}>
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{task.title}</td>
-        
+                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                  <button 
+                    onClick={() => {handleDelete(task.id)/* Add your delete logic here, using task.id or index as needed */}}
+                    className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
+                  >
+                    Delete
+                  </button>
+                </td>
               </tr>
             ))}
           </tbody>
       </table>
-
-
       </div>
     </div>
   );
