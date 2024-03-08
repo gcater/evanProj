@@ -36,8 +36,8 @@ function App() {
   return (
     <Provider theme={defaultTheme}>
       <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+        <DraggableList/> 
         <DraggableList/>
-        <DroppableList/>
       </div>
       <Button
         variant="accent"
@@ -100,10 +100,12 @@ const TaskManager: React.FC = () => {
   };
 
   // Handle submit
+  // *TODO handle card functionality for submiting*
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
     void createTask.mutate({
       title: task,
+      cardId: "1",
     });
     setTask(""); // Clear input after submission
   };
@@ -153,7 +155,7 @@ interface ListItem {
 }
 
 const DraggableList: React.FC = () => {
-  const list = useListData<ListItem>({
+  const list = useListData({
     initialItems: [
       { id: 'a', type: 'file', name: 'Adobe Photoshop' },
       { id: 'b', type: 'file', name: 'Adobe XD' },
@@ -164,6 +166,7 @@ const DraggableList: React.FC = () => {
   });
 
   const { dragAndDropHooks } = useDragAndDrop({
+    acceptedDragTypes: ['adobe-app'],
     getItems: (keys) => Array.from(keys).map((key) => {
       const item = list.getItem(key.toString());
       return { 'adobe-app': JSON.stringify(item) };
@@ -174,6 +177,32 @@ const DraggableList: React.FC = () => {
         list.remove(...e.keys);
       }
     },
+    // shouldAcceptItemDrop: (target) => !!list.getItem(target.key),
+    // eslint-disable-next-line @typescript-eslint/no-misused-promises
+    onInsert: async (e) => {
+      const {
+        items,
+        target
+      } = e;
+
+      const itemsToInsert: ListItem[] = []
+
+      await Promise.all(items.map(async (item) => {
+        console.log(item)
+        if (item.kind == "text") {
+          // eslint-disable-next-line @typescript-eslint/no-misused-promises
+          const value = JSON.parse(await item.getText('adobe-app')) as ListItem
+          itemsToInsert.push(value)
+        }
+      }))
+     
+      if (target.dropPosition === 'before') {
+        list.insertBefore(target.key, ...itemsToInsert);
+      } else if (target.dropPosition === 'after') {
+        list.insertAfter(target.key, ...itemsToInsert);
+      }
+    },
+
   });
 
   return (
@@ -185,6 +214,7 @@ const DraggableList: React.FC = () => {
       items={list.items}
       dragAndDropHooks={dragAndDropHooks}
     >
+      
       {(item) => (
         <Item textValue={item.name}>
           {item.name}
@@ -209,7 +239,7 @@ function DroppableList() {
   const { dragAndDropHooks } = useDragAndDrop({
     acceptedDragTypes: ['adobe-app'],
     
-    shouldAcceptItemDrop: (target) => !!list.getItem(target.key).childNodes,
+    // shouldAcceptItemDrop: (target) => !!list.getItem(target.key).childNodes,
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
     onInsert: async (e) => {
       const {

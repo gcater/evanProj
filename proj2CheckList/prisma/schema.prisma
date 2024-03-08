@@ -62,6 +62,7 @@ model User {
     accounts      Account[]
     sessions      Session[]
     posts         Post[]
+    cards        Card[]
     tasks         Task[]
 }
 
@@ -73,9 +74,19 @@ model VerificationToken {
     @@unique([identifier, token])
 }
 
+model Card{
+    id    String    @id @default(cuid())
+    title String
+    user  User @relation(fields: [userId], references: [id])
+    userId String
+    tasks Task[]
+}
+
 model Task{
     id    String    @id @default(cuid())
     title String
     user  User @relation(fields: [userId], references: [id])
     userId String
+    card  Card @relation(fields: [cardId], references: [id])
+    cardId String
 }

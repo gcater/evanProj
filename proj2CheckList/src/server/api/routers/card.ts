@@ -5,9 +5,9 @@ import {
   protectedProcedure,
 } from "~/server/api/trpc";
 
-export const taskRouter = createTRPCRouter({
+export const cardRouter = createTRPCRouter({
     getAll: protectedProcedure.query(({ ctx }) => {
-        return ctx.db.task.findMany({
+        return ctx.db.card.findMany({
             where:{
                 userId: ctx.session.user.id
             }
@@ -15,13 +15,13 @@ export const taskRouter = createTRPCRouter({
       }),
     
     create: protectedProcedure
-        .input(z.object({ title: z.string(), cardId: z.string() }))
+        .input(z.object({ title: z.string(), }))
         .mutation(({ ctx, input }) => {
-            return ctx.db.task.create({
+            return ctx.db.card.create({
                 data: {
                     title: input.title,
-                    cardId: input.cardId,
                     userId: ctx.session.user.id,
+
                 },
             });
         }),
@@ -29,14 +29,11 @@ export const taskRouter = createTRPCRouter({
     delete: protectedProcedure
       .input(z.object({ id: z.string() }))
       .mutation(({ ctx, input }) => {
-          return ctx.db.task.delete({
+          return ctx.db.card.delete({
               where: {
                   id: input.id,
-                  userId: ctx.session.user.id, // Ensure the task belongs to the current user
+                  userId: ctx.session.user.id, // Ensure the card
               },
           });
       }),
-        
-
-     
 });
