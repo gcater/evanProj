@@ -1,6 +1,6 @@
 import { postRouter } from "~/server/api/routers/post";
 import { taskRouter } from "~/server/api/routers/task";
-import { cardRouter } from "./routers/card";
+import { cardRouter } from "~/server/api/routers/card";
 import { createTRPCRouter } from "~/server/api/trpc";
 
 /**
