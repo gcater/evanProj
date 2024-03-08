@@ -4,9 +4,9 @@ import Head from "next/head";
 // import Link from "next/link";
 import React, { useState } from "react";
 import { api } from "~/utils/api";
-import {Button, useDragAndDrop, Item, ListView, useListData, defaultTheme, Provider} from '@adobe/react-spectrum';
+import {Button, Item, ListView, useListData, defaultTheme, Provider} from '@adobe/react-spectrum';
 import type {TextDropItem} from '@adobe/react-spectrum';
-import {Text} from '@adobe/react-spectrum';
+import {Text, useDragAndDrop} from '@adobe/react-spectrum';
 //import Folder from '@spectrum-icons/illustrations/Folder';
 
 
@@ -146,8 +146,6 @@ const TaskManager: React.FC = () => {
 };
 
 
-
-
 interface ListItem {
   id: string;
   type: string;
@@ -195,13 +193,6 @@ const DraggableList: React.FC = () => {
     </ListView>
   );
 };
-interface ProcessedItem {
-  id: string;
-  type: string;
-  name: string;
-  childNodes?: ProcessedItem[];
-  // include other properties as per your data structure
-}
 
 function DroppableList() {
   const list = useListData({
@@ -217,47 +208,49 @@ function DroppableList() {
 
   const { dragAndDropHooks } = useDragAndDrop({
     acceptedDragTypes: ['adobe-app'],
+    
     shouldAcceptItemDrop: (target) => !!list.getItem(target.key).childNodes,
-    onInsert: (e) => {
+    // eslint-disable-next-line @typescript-eslint/no-misused-promises
+    onInsert: async (e) => {
       const {
         items,
         target
       } = e;
 
-      items.forEach((item: TextDropItem) => {
-        item.getText('adobe-app').then(text => {
-          const processedItem = JSON.parse(text) as ProcessedItem;
+      const itemsToInsert: ListItem[] = []
 
-          if (target.dropPosition === 'before') {
-            list.insertBefore(target.key, processedItem);
-          } else if (target.dropPosition === 'after') {
-            list.insertAfter(target.key, processedItem);
-          }
-        }).catch(error => {
-          console.error("An error occurred:", error);
-        });
-      });
+      await Promise.all(items.map(async (item) => {
+        console.log(item)
+        if (item.kind == "text") {
+          // eslint-disable-next-line @typescript-eslint/no-misused-promises
+          const value = JSON.parse(await item.getText('adobe-app')) as ListItem
+          itemsToInsert.push(value)
+        }
+      }))
+     
+      if (target.dropPosition === 'before') {
+        list.insertBefore(target.key, ...itemsToInsert);
+      } else if (target.dropPosition === 'after') {
+        list.insertAfter(target.key, ...itemsToInsert);
+      }
     },
-    onItemDrop: (e) => {
-      const {
-        items,
-        target
-      } = e;
-
-      items.forEach((item: TextDropItem) => {
-        item.getText('adobe-app').then(text => {
-          const processedItem = JSON.parse(text) as ProcessedItem;
-          const targetItem = list.getItem(target.key) as ProcessedItem;
-
-          list.update(target.key, {
-            ...targetItem,
-            childNodes: [...targetItem.childNodes, processedItem]
-          });
-        }).catch(error => {
-          console.error("An error occurred:", error);
-        });
-      });
-    }
+    // onItemDrop: async (e) => {
+    //   const {
+    //     items,
+    //     target
+    //   } = e;
+    //   const processedItems = await Promise.all(
+    //     items.map(async (item: TextDropItem) =>
+    //       JSON.parse(await item.getText('adobe-app'))
+    //     )
+    //   );
+    //   const targetItem = list.getItem(target.key);
+    //   list.update(target.key, {
+    //     ...targetItem,
+    //     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    //     childNodes: [...targetItem.childNodes, ...processedItems]
+    //   });
+    // }
   });
 
   return (
@@ -270,15 +263,10 @@ function DroppableList() {
       dragAndDropHooks={dragAndDropHooks}
     >
       {(item) => (
-        <Item textValue={item.name} hasChildItems={item.type === 'folder'}>
-          
+        <Item textValue={item.name}>
+     
           <Text>{item.name}</Text>
-          {item.type === 'folder' &&
-            (
-              <Text slot="description">
-                {`contains ${item.childNodes.length} dropped item(s)`}
-              </Text>
-            )}
+          
         </Item>
       )}
     </ListView>
