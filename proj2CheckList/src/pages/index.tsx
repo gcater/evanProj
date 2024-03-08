@@ -1,8 +1,14 @@
+"use client"
 import { signIn, signOut, useSession } from "next-auth/react";
 import Head from "next/head";
 // import Link from "next/link";
 import React, { useState } from "react";
 import { api } from "~/utils/api";
+import {Button, Item, ListView, useListData, defaultTheme, Provider} from '@adobe/react-spectrum';
+import type {TextDropItem} from '@adobe/react-spectrum';
+import {Text, useDragAndDrop} from '@adobe/react-spectrum';
+//import Folder from '@spectrum-icons/illustrations/Folder';
+
 
 export default function Home() {
   return (
@@ -18,10 +24,31 @@ export default function Home() {
           <AuthShowcase />
         </header>
         <TaskManager/>
+        <App/>
+       
+
       </main>
     </>
   );
 }
+
+function App() {
+  return (
+    <Provider theme={defaultTheme}>
+      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+        <DraggableList/>
+        <DroppableList/>
+      </div>
+      <Button
+        variant="accent"
+        onPress={() => alert('Hey there!')}
+      >
+        Hello React Spectrum!
+      </Button>
+    </Provider>
+  );
+}
+
 
 function AuthShowcase() {
   const { data: sessionData } = useSession();
@@ -62,6 +89,7 @@ const TaskManager: React.FC = () => {
   // Create task mutation
   const createTask = api.task.create.useMutation({
     onSuccess: () => {
+      console.log(tasks)
       void refetchTasks(); // Refetch tasks after a successful creation
     },
   });
@@ -109,7 +137,7 @@ const TaskManager: React.FC = () => {
         {tasks?.map((task) => (
           <div key={task.id}>
             <span>{task.title}</span>
-            <button onClick={() => handleDelete(task.id)}>Delete</button>
+            <button style={{ marginLeft: '10px' }} onClick={() => handleDelete(task.id)}>Delete</button>
           </div>
         ))}
       </div>
@@ -118,3 +146,129 @@ const TaskManager: React.FC = () => {
 };
 
 
+interface ListItem {
+  id: string;
+  type: string;
+  name: string;
+}
+
+const DraggableList: React.FC = () => {
+  const list = useListData<ListItem>({
+    initialItems: [
+      { id: 'a', type: 'file', name: 'Adobe Photoshop' },
+      { id: 'b', type: 'file', name: 'Adobe XD' },
+      { id: 'c', type: 'file', name: 'Adobe Dreamweaver' },
+      { id: 'd', type: 'file', name: 'Adobe InDesign' },
+      { id: 'e', type: 'file', name: 'Adobe Connect' },
+    ],
+  });
+
+  const { dragAndDropHooks } = useDragAndDrop({
+    getItems: (keys) => Array.from(keys).map((key) => {
+      const item = list.getItem(key.toString());
+      return { 'adobe-app': JSON.stringify(item) };
+    }),
+
+    onDragEnd: (e) => {
+      if (e.dropOperation === 'move') {
+        list.remove(...e.keys);
+      }
+    },
+  });
+
+  return (
+    <ListView
+      aria-label="Draggable list view example"
+      width="size-3600"
+      height="size-3600"
+      selectionMode="multiple"
+      items={list.items}
+      dragAndDropHooks={dragAndDropHooks}
+    >
+      {(item) => (
+        <Item textValue={item.name}>
+          {item.name}
+        </Item>
+      )}
+    </ListView>
+  );
+};
+
+function DroppableList() {
+  const list = useListData({
+    initialItems: [
+      { id: 'f', type: 'file', name: 'Adobe AfterEffects' },
+      { id: 'g', type: 'file', name: 'Adobe Illustrator' },
+      { id: 'h', type: 'file', name: 'Adobe Lightroom' },
+      { id: 'i', type: 'file', name: 'Adobe Premiere Pro' },
+      { id: 'j', type: 'file', name: 'Adobe Fresco' },
+      { id: 'k', type: 'folder', name: 'Apps', childNodes: [] }
+    ]
+  });
+
+  const { dragAndDropHooks } = useDragAndDrop({
+    acceptedDragTypes: ['adobe-app'],
+    
+    shouldAcceptItemDrop: (target) => !!list.getItem(target.key).childNodes,
+    // eslint-disable-next-line @typescript-eslint/no-misused-promises
+    onInsert: async (e) => {
+      const {
+        items,
+        target
+      } = e;
+
+      const itemsToInsert: ListItem[] = []
+
+      await Promise.all(items.map(async (item) => {
+        console.log(item)
+        if (item.kind == "text") {
+          // eslint-disable-next-line @typescript-eslint/no-misused-promises
+          const value = JSON.parse(await item.getText('adobe-app')) as ListItem
+          itemsToInsert.push(value)
+        }
+      }))
+     
+      if (target.dropPosition === 'before') {
+        list.insertBefore(target.key, ...itemsToInsert);
+      } else if (target.dropPosition === 'after') {
+        list.insertAfter(target.key, ...itemsToInsert);
+      }
+    },
+    // onItemDrop: async (e) => {
+    //   const {
+    //     items,
+    //     target
+    //   } = e;
+    //   const processedItems = await Promise.all(
+    //     items.map(async (item: TextDropItem) =>
+    //       JSON.parse(await item.getText('adobe-app'))
+    //     )
+    //   );
+    //   const targetItem = list.getItem(target.key);
+    //   list.update(target.key, {
+    //     ...targetItem,
+    //     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    //     childNodes: [...targetItem.childNodes, ...processedItems]
+    //   });
+    // }
+  });
+
+  return (
+    <ListView
+      aria-label="Droppable list view example"
+      width="size-3600"
+      height="size-3600"
+      selectionMode="multiple"
+      items={list.items}
+      dragAndDropHooks={dragAndDropHooks}
+    >
+      {(item) => (
+        <Item textValue={item.name}>
+     
+          <Text>{item.name}</Text>
+          
+        </Item>
+      )}
+    </ListView>
+  );
+}
