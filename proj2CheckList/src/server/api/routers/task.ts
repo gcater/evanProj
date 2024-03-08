@@ -15,11 +15,12 @@ export const taskRouter = createTRPCRouter({
       }),
     
     create: protectedProcedure
-        .input(z.object({ title: z.string() }))
+        .input(z.object({ title: z.string(), cardId: z.string() }))
         .mutation(({ ctx, input }) => {
             return ctx.db.task.create({
                 data: {
                     title: input.title,
+                    cardId: input.cardId,
                     userId: ctx.session.user.id,
                 },
             });
