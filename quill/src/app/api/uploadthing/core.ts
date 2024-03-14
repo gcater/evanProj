@@ -4,11 +4,10 @@ import { createUploadthing, type FileRouter } from "uploadthing/next";
 import { UploadThingError } from "uploadthing/server";
 
 import { PDFLoader } from "langchain/document_loaders/fs/pdf";
-
 import { Pinecone } from '@pinecone-database/pinecone';
-import { OpenAIEmbeddings } from "langchain/embeddings/openai";
+import { OpenAIEmbeddings } from "@langchain/openai";
 import { PineconeStore } from "@langchain/pinecone";
-
+import {pinecone} from "@/lib/pinecone"
 const f = createUploadthing();
 
 // FileRouter for your app, can contain multiple FileRoutes
@@ -44,39 +43,40 @@ export const ourFileRouter: FileRouter = {
 
         const pagesAmt = pageLevelDocs.length;
 
-        //vecotrize and index entire document
+        //vecotrize and index entire docu;
+        const pinecone = new Pinecone();
+        console.log(pinecone)
+        const pineconeIndex = pinecone.Index('starter-index')
+        console.log(pineconeIndex)
 
-      
-
-
-
-        const pineconeIndex = Pinecone.Index("quill");
 
         const embeddings = new OpenAIEmbeddings({
           openAIApiKey: process.env.OPENAI_API_KEY,
         });
-
+        console.log(embeddings)
         await PineconeStore.fromDocuments(pageLevelDocs, embeddings, {
           pineconeIndex,
           namespace: createdFile.id,
+          
         });
+        
         await db.file.update({
-          data: {
+          data:{
             uploadStatus: "SUCCESS",
           },
           where: {
             id: createdFile.id,
-          },
-        });
+          }
+        })
       } catch (err) {
         await db.file.update({
-          data: {
+          data:{
             uploadStatus: "FAILED",
           },
           where: {
             id: createdFile.id,
-          },
-        });
+          }
+        })
       }
     }),
 } satisfies FileRouter;
