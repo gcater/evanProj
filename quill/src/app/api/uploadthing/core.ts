@@ -3,6 +3,12 @@ import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
 import { createUploadthing, type FileRouter } from "uploadthing/next";
 import { UploadThingError } from "uploadthing/server";
 
+import { PDFLoader } from "langchain/document_loaders/fs/pdf";
+
+import { Pinecone } from '@pinecone-database/pinecone';
+import { OpenAIEmbeddings } from "langchain/embeddings/openai";
+import { PineconeStore } from "@langchain/pinecone";
+
 const f = createUploadthing();
 
 // FileRouter for your app, can contain multiple FileRoutes
@@ -27,6 +33,51 @@ export const ourFileRouter: FileRouter = {
           uploadStatus: "PROCESSING",
         },
       });
+
+      try {
+        const response = await fetch(`https://utfs.io/f/${file.key}`);
+        const blob = await response.blob();
+
+        const loader = new PDFLoader(blob);
+
+        const pageLevelDocs = await loader.load();
+
+        const pagesAmt = pageLevelDocs.length;
+
+        //vecotrize and index entire document
+
+      
+
+
+
+        const pineconeIndex = Pinecone.Index("quill");
+
+        const embeddings = new OpenAIEmbeddings({
+          openAIApiKey: process.env.OPENAI_API_KEY,
+        });
+
+        await PineconeStore.fromDocuments(pageLevelDocs, embeddings, {
+          pineconeIndex,
+          namespace: createdFile.id,
+        });
+        await db.file.update({
+          data: {
+            uploadStatus: "SUCCESS",
+          },
+          where: {
+            id: createdFile.id,
+          },
+        });
+      } catch (err) {
+        await db.file.update({
+          data: {
+            uploadStatus: "FAILED",
+          },
+          where: {
+            id: createdFile.id,
+          },
+        });
+      }
     }),
 } satisfies FileRouter;
 
