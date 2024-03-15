@@ -14,6 +14,7 @@ import { UpstashVectorStore } from "@langchain/community/vectorstores/upstash";
 // import { PineconeStore } from "@langchain/pinecone";
 // import {PineconeVectorStore} from "@langchain/pinecone";
 // import {pinecone} from "@/lib/pinecone"
+import { getPineconeClient } from "@/lib/pinecone";
 const f = createUploadthing();
 
 // FileRouter for your app, can contain multiple FileRoutes
@@ -57,46 +58,47 @@ export const ourFileRouter: FileRouter = {
         });
 
         const embeddings = new OpenAIEmbeddings({
-          openAIApiKey: process.env.OPENAPI_KEY as string,
-        })
-          
+          openAIApiKey: process.env.OPENAI_API_KEY as string,
+        });
 
         const upstashVector = new UpstashVectorStore(embeddings, {
           index,
         });
-        try{
+        try {
           await upstashVector.addDocuments(pageLevelDocs);
-        }catch(err){
-          console.error("Error generating or indexing embeddings:", err)
+        } catch (err) {
+          console.error("Error generating or indexing embeddings:", err);
         }
 
         // Waiting vectors to be indexed in the vector store.
         // eslint-disable-next-line no-promise-executor-return
         await new Promise((resolve) => setTimeout(resolve, 1000));
 
-        const queryResult = await upstashVector.similaritySearchWithScore("The company and influencer agree to enter into a partnership", 1);
-        console.log("queryResult: ", queryResult);
-       
-        
+        const queryResult = await upstashVector.similaritySearchWithScore(
+          "The company and influencer agree to enter into a partnership",
+          1
+        );
+        //console.log("queryResult: ", queryResult);
+
         await db.file.update({
-          data:{
+          data: {
             uploadStatus: "SUCCESS",
           },
           where: {
             id: createdFile.id,
-          }
-        })
+          },
+        });
       } catch (err) {
-        console.log("there was an error", err)
-        
+        console.log("there was an error", err);
+
         await db.file.update({
-          data:{
+          data: {
             uploadStatus: "FAILED",
           },
           where: {
             id: createdFile.id,
-          }
-        })
+          },
+        });
       }
     }),
 } satisfies FileRouter;
