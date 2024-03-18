@@ -14,7 +14,7 @@ import { UpstashVectorStore } from "@langchain/community/vectorstores/upstash";
 // import { PineconeStore } from "@langchain/pinecone";
 // import {PineconeVectorStore} from "@langchain/pinecone";
 // import {pinecone} from "@/lib/pinecone"
-import { getPineconeClient } from "@/lib/pinecone";
+// import { getPineconeClient } from "@/lib/pinecone";
 const f = createUploadthing();
 
 // FileRouter for your app, can contain multiple FileRoutes
