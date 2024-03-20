@@ -1,14 +1,14 @@
 import { db } from "@/db";
 import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
 import { createUploadthing, type FileRouter } from "uploadthing/next";
-import { UploadThingError } from "uploadthing/server";
+// import { UploadThingError } from "uploadthing/server";
 
 import { PDFLoader } from "langchain/document_loaders/fs/pdf";
 // import { Pinecone } from '@pinecone-database/pinecone';
 import { OpenAIEmbeddings } from "@langchain/openai";
 
 import { Index } from "@upstash/vector";
-//import { UpstashVectorStore } from "upstash";
+// import { UpstashVectorStore } from "upstash";
 import { UpstashVectorStore } from "@langchain/community/vectorstores/upstash";
 
 // import { PineconeStore } from "@langchain/pinecone";
@@ -25,7 +25,7 @@ export const ourFileRouter: FileRouter = {
       const { getUser } = getKindeServerSession();
       const user = await getUser();
 
-      if (!user || !user.id) throw new Error("Unauthorized");
+      if (user?.id == null) throw new Error("Unauthorized");
 
       return { userId: user.id };
     })
@@ -48,17 +48,17 @@ export const ourFileRouter: FileRouter = {
 
         const pageLevelDocs = await loader.load();
 
-        const pagesAmt = pageLevelDocs.length;
-        //console.log(pageLevelDocs)
-        //vecotrize and index entire docu;
+        // const pagesAmt = pageLevelDocs.length;
+        // console.log(pageLevelDocs)
+        // vecotrize and index entire docu;
 
         const index = new Index({
-          url: process.env.UPSTASH_VECTOR_REST_URL as string,
-          token: process.env.UPSTASH_VECTOR_REST_TOKEN as string,
+          url: process.env.UPSTASH_VECTOR_REST_URL,
+          token: process.env.UPSTASH_VECTOR_REST_TOKEN,
         });
 
         const embeddings = new OpenAIEmbeddings({
-          openAIApiKey: process.env.OPENAI_API_KEY as string,
+          openAIApiKey: process.env.OPENAI_API_KEY,
         });
 
         const upstashVector = new UpstashVectorStore(embeddings, {
@@ -74,11 +74,11 @@ export const ourFileRouter: FileRouter = {
         // eslint-disable-next-line no-promise-executor-return
         await new Promise((resolve) => setTimeout(resolve, 1000));
 
-        const queryResult = await upstashVector.similaritySearchWithScore(
-          "The company and influencer agree to enter into a partnership",
-          1
-        );
-        //console.log("queryResult: ", queryResult);
+        // const queryResult = await upstashVector.similaritySearchWithScore(
+        //   "The company and influencer agree to enter into a partnership",
+        //   1
+        // );
+        // console.log("queryResult: ", queryResult);
 
         await db.file.update({
           data: {

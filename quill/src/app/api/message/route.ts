@@ -3,21 +3,24 @@ import { SendMessageValidator } from "@/lib/validators/SendMessageValidator";
 import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
 import { OpenAIEmbeddings } from "@langchain/openai";
 import { Index } from "@upstash/vector";
-import { NextRequest } from "next/server";
+import type { NextRequest } from "next/server";
 
 import { UpstashVectorStore } from "@langchain/community/vectorstores/upstash";
 import { openai } from "@/lib/openai";
 
 import { OpenAIStream, StreamingTextResponse } from "ai";
 
-export const POST = async (req: NextRequest) => {
-  //enpoint for asking a question to pdf file
+export const POST = async (req: NextRequest): Promise<Response> => {
+  // enpoint for asking a question to pdf file
 
   const body = await req.json();
 
   const { getUser } = getKindeServerSession();
   const user = await getUser();
-  if (!user || !user.id) return new Response("Unauthorized", { status: 401 });
+
+  if (user?.id == null) {
+    return new Response("Unauthorized", { status: 401 });
+  }
 
   const { id: userId } = user;
 
@@ -32,7 +35,7 @@ export const POST = async (req: NextRequest) => {
   });
 
   console.log("HELLLOOOO I AM AT ROUTE");
-  if (!file) return new Response("No file found", { status: 404 });
+  if (file == null) return new Response("No file found", { status: 404 });
 
   await db.message.create({
     data: {
@@ -43,14 +46,14 @@ export const POST = async (req: NextRequest) => {
     },
   });
 
-  //1: vectorize message
+  // 1: vectorize message
   const embeddings = new OpenAIEmbeddings({
-    openAIApiKey: process.env.OPENAI_API_KEY as string,
+    openAIApiKey: process.env.OPENAI_API_KEY,
   });
 
   const index = new Index({
-    url: process.env.UPSTASH_VECTOR_REST_URL as string,
-    token: process.env.UPSTASH_VECTOR_REST_TOKEN as string,
+    url: process.env.UPSTASH_VECTOR_REST_URL,
+    token: process.env.UPSTASH_VECTOR_REST_TOKEN,
   });
 
   const vectorStore = await UpstashVectorStore.fromExistingIndex(embeddings, {
@@ -70,7 +73,9 @@ export const POST = async (req: NextRequest) => {
   });
 
   const formattedPrevMessages = prevMessages.map((msg) => ({
-    role: msg.isUserMessage ? ("user" as const) : ("assistant" as const),
+    role: (msg.isUserMessage as boolean)
+      ? ("user" as const)
+      : ("assistant" as const),
     content: msg.text,
   }));
 
@@ -91,10 +96,13 @@ export const POST = async (req: NextRequest) => {
   \n----------------\n
   
   PREVIOUS CONVERSATION:
-  ${formattedPrevMessages.map((message) => {
-    if (message.role === "user") return `User: ${message.content}\n`;
-    return `Assistant: ${message.content}\n`;
-  })}
+  
+  ${formattedPrevMessages
+    .map((message) => {
+      if (message.role === "user") return `User: ${message.content}\n`;
+      return `Assistant: ${message.content}\n`;
+    })
+    .join("")}
   
   \n----------------\n
   

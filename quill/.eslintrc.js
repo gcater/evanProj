@@ -3,5 +3,6 @@ module.exports = {
         "standard-with-typescript",
         "plugin:react/recommended",
         "prettier",
+        'plugin:@next/next/recommended',
     ]
 }

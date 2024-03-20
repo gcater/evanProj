@@ -13,7 +13,7 @@ export const appRouter = router({
     const { getUser } = getKindeServerSession();
     const user = await getUser();
 
-    if (!user || !user.id || !user.email) {
+    if (user?.id == null || user?.email == null) {
       throw new TRPCError({ code: "UNAUTHORIZED" });
     }
     // chekc if the user is in the database
@@ -23,8 +23,8 @@ export const appRouter = router({
       },
     });
 
-    if (!dbUser) {
-      //create user in db
+    if (dbUser === undefined || dbUser === null) {
+      // create user in db
       await db.user.create({
         data: {
           id: user.id,
@@ -37,7 +37,7 @@ export const appRouter = router({
   }),
   getUserFiles: privateProcedure.query(async ({ ctx }) => {
     const { userId } = ctx;
-    return await db.file.findMany({
+    return db.file.findMany({
       where: {
         userId,
       },
@@ -49,18 +49,24 @@ export const appRouter = router({
 
     const billingUrl = absoluteUrl("/dashboard/billing");
 
-    if (!userId) throw new TRPCError({ code: "UNAUTHORIZED" });
+    if (userId === null || userId.length === 0)
+      throw new TRPCError({ code: "UNAUTHORIZED" });
 
     const dbUser = await db.user.findFirst({
       where: {
         id: userId,
       },
     });
-    if (!dbUser) throw new TRPCError({ code: "UNAUTHORIZED" });
+    if (dbUser === null || dbUser === undefined)
+      throw new TRPCError({ code: "UNAUTHORIZED" });
 
     const subscriptionPlan = await getUserSubscriptionPlan();
 
-    if (subscriptionPlan.isSubscribed && dbUser.stripeCustomerId) {
+    if (
+      subscriptionPlan.isSubscribed &&
+      typeof dbUser.stripeCustomerId === "string" &&
+      dbUser.stripeCustomerId !== ""
+    ) {
       const stripeSession = await stripe.billingPortal.sessions.create({
         customer: dbUser.stripeCustomerId,
         return_url: billingUrl,
@@ -82,7 +88,7 @@ export const appRouter = router({
         },
       ],
       metadata: {
-        userId: userId,
+        userId,
       },
     });
     console.log(stripeSession.url);
@@ -108,7 +114,8 @@ export const appRouter = router({
           userId,
         },
       });
-      if (!file) throw new TRPCError({ code: "NOT_FOUND" });
+      if (file === null || file === undefined)
+        throw new TRPCError({ code: "NOT_FOUND" });
 
       const messages = await db.message.findMany({
         take: limit + 1,
@@ -118,7 +125,7 @@ export const appRouter = router({
         orderBy: {
           createdAt: "desc",
         },
-        cursor: cursor ? { id: cursor } : undefined,
+        cursor: cursor !== "" && cursor !== null ? { id: cursor } : undefined,
         select: {
           id: true,
           isUserMessage: true,
@@ -127,7 +134,7 @@ export const appRouter = router({
         },
       });
 
-      let nextCursor: typeof cursor | undefined = undefined;
+      let nextCursor: typeof cursor | undefined;
       if (messages.length > limit) {
         const nextItem = messages.pop();
         nextCursor = nextItem?.id;
@@ -149,7 +156,8 @@ export const appRouter = router({
         },
       });
 
-      if (!file) return { status: "PENDING" as const };
+      if (file === null || file === undefined)
+        return { status: "PENDING" as const };
       return { status: file.uploadStatus };
     }),
 
@@ -164,7 +172,8 @@ export const appRouter = router({
           userId,
         },
       });
-      if (!file) throw new TRPCError({ code: "NOT_FOUND" });
+      if (file === null || file === undefined)
+        throw new TRPCError({ code: "NOT_FOUND" });
 
       return file;
     }),
@@ -180,8 +189,8 @@ export const appRouter = router({
           userId,
         },
       });
-      if (!file) throw new TRPCError({ code: "NOT_FOUND" });
-      9;
+      if (file === null || file === undefined)
+        throw new TRPCError({ code: "NOT_FOUND" });
       await db.file.delete({
         where: {
           id: input.id,
