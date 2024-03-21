@@ -22,21 +22,25 @@ interface BillingFormProps {
 
 const BillingForm = ({ subscriptionPlan }: BillingFormProps): JSX.Element => {
   const { toast } = useToast();
+  const [isLoading, setIsLoading] = React.useState(false);
 
-  const { mutate: createStripeSession, isLoading } =
-    trpc.createStripeSession.useMutation({
-      onSuccess: ({ url }) => {
-        if (url !== null && url !== "") {
-          window.location.href = url;
-        } else {
-          toast({
-            title: "There was a problem",
-            description: "Please try again later",
-            variant: "destructive",
-          });
-        }
-      },
-    });
+  const { mutate: createStripeSession } = trpc.createStripeSession.useMutation({
+    onMutate: () => {
+      setIsLoading(true);
+    },
+    onSuccess: ({ url }) => {
+      setIsLoading(false);
+      if (url !== null && url !== "") {
+        window.location.href = url;
+      } else {
+        toast({
+          title: "There was a problem",
+          description: "Please try again later",
+          variant: "destructive",
+        });
+      }
+    },
+  });
 
   return (
     <MaxWidthWrapper className="max-w-5l">
@@ -51,8 +55,8 @@ const BillingForm = ({ subscriptionPlan }: BillingFormProps): JSX.Element => {
           <CardHeader>
             <CardTitle>Subscription Plan</CardTitle>
             <CardDescription>
-              You are currently on the <strong>{subscriptionPlan.name}</strong>{" "}
-              plan.
+              You are currently on the{" "}
+              <strong>{subscriptionPlan.stripeSubscriptionId}</strong> plan.
             </CardDescription>
           </CardHeader>
 
@@ -71,7 +75,10 @@ const BillingForm = ({ subscriptionPlan }: BillingFormProps): JSX.Element => {
                 {subscriptionPlan.isCanceled
                   ? "Your plan will be canceled on "
                   : "Your plan will renew on "}
-                {format(subscriptionPlan.stripeCurrentPeriodEnd!, "dd.MM/yyyy")}
+                {format(
+                  subscriptionPlan.stripeCurrentPeriodEnd ?? new Date(),
+                  "dd.MM/yyyy"
+                )}
                 .
               </p>
             ) : null}

@@ -19,7 +19,17 @@ const Page = (): JSX.Element => {
   const { getUser } = getKindeServerSession();
   const user = getUser();
 
-  const pricingItems = [
+  interface FeatureItem {
+    text: string;
+    footnote?: string;
+    negative?: boolean;
+  }
+  const pricingItems: Array<{
+    plan: string;
+    tagline: string;
+    quota: number;
+    features: FeatureItem[];
+  }> = [
     {
       plan: "Free",
       tagline: "For small side projects.",
@@ -50,7 +60,7 @@ const Page = (): JSX.Element => {
     {
       plan: "Pro",
       tagline: "For larger projects with higher needs.",
-      quota: PLANS.find((p) => p.slug === "pro")!.quota,
+      quota: PLANS.find((p) => p.slug === "pro")?.quota ?? 0,
       features: [
         {
           text: "25 pages per PDF",
@@ -88,9 +98,16 @@ const Page = (): JSX.Element => {
         <div className="pt-12 grid grid-cols-1 gap-10 lg:gris-cols-2">
           <TooltipProvider>
             {pricingItems.map(({ plan, tagline, quota, features }) => {
+              const planDetails = PLANS.find(
+                (p) => p.slug === plan.toLowerCase()
+              );
               const price =
-                PLANS.find((p) => p.slug === plan.toLowerCase())?.price
-                  .amount || 0;
+                planDetails?.price.amount !== null
+                  ? planDetails?.price.amount
+                  : 0;
+
+              // PLANS.find((p) => p.slug === plan.toLowerCase())?.price
+              //   .amount || 0;
 
               return (
                 <div
@@ -111,13 +128,13 @@ const Page = (): JSX.Element => {
                     </h3>
                     <p className="text-gray-600">{tagline}</p>
                     <p className="my-5 font-display text-6xl font-semibold">
-                      price
+                      {price}
                     </p>
                     <p className="text-gray-500">per month</p>
                   </div>
                   <div className="flex h-20 items-center justify-center border-b border-t border-gray-200 bg-gray-50">
                     <div className="flex items-center space-x-1">
-                      <p>{quota.toLocaleString()}PDFs/mo included</p>
+                      <p>{quota?.toLocaleString()}PDFs/mo included</p>
 
                       <Tooltip delayDuration={300}>
                         <TooltipTrigger className="cursor-default ml-1.5">
@@ -134,13 +151,13 @@ const Page = (): JSX.Element => {
                     {features.map(({ text, footnote, negative }) => (
                       <li key={text} className="flex space-x-5">
                         <div className="flex-shrink-0">
-                          {negative ? (
+                          {negative === true ? (
                             <Minus className="h-6 w-6 text-gray-300" />
                           ) : (
                             <Check className="h-6 w-6 text-blue-300" />
                           )}
                         </div>
-                        {footnote ? (
+                        {footnote !== null ? (
                           <div className="flex items-center space-x-1">
                             <p
                               className={cn("text-gray-400", {
@@ -175,17 +192,17 @@ const Page = (): JSX.Element => {
                   <div className="p-5">
                     {plan === "Free" ? (
                       <Link
-                        href={user ? "/dashboard" : "/sign-in"}
+                        href={user !== null ? "/dashboard" : "/sign-in"}
                         className={buttonVariants({
                           className: "w-full",
                           variant: "secondary",
                         })}
                       >
                         {" "}
-                        {user ? "upgrade now" : "Sign up"}
+                        {user !== null ? "upgrade now" : "Sign up"}
                         <ArrowRight className="h-5 w-5 ml-1.5" />
                       </Link>
-                    ) : user ? (
+                    ) : user !== null ? (
                       <UpgradeButton />
                     ) : (
                       <Link

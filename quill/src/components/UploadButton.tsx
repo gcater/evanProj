@@ -11,7 +11,7 @@ import { useToast } from "./ui/use-toast";
 import { trpc } from "@/app/_trpc/client";
 import { useRouter } from "next/navigation";
 
-const UploadDropzone = () => {
+const UploadDropzone = (): JSX.Element => {
   const router = useRouter();
 
   const [isUploading, setIsUploading] = useState<boolean>(true);
@@ -29,7 +29,7 @@ const UploadDropzone = () => {
     retryDelay: 500,
   });
 
-  const startSimulatedProgress = () => {
+  const startSimulatedProgress = (): NodeJS.Timeout => {
     setUploadProgress(0);
 
     const interval = setInterval(() => {
@@ -49,36 +49,38 @@ const UploadDropzone = () => {
   return (
     <Dropzone
       multiple={false}
-      onDrop={async (acceptedFile) => {
-        setIsUploading(true);
+      onDrop={(acceptedFile) => {
+        void (async () => {
+          setIsUploading(true);
 
-        const progressInterval = startSimulatedProgress();
+          const progressInterval = startSimulatedProgress();
 
-        // handle file uploading
-        const res = await startUpload(acceptedFile);
-        if (!res) {
-          return toast({
-            title: "Something went wrong",
-            description: "Please try again later",
-            variant: "destructive",
-          });
-        }
+          // handle file uploading
+          const res = await startUpload(acceptedFile);
+          if (res !== null && res?.length === 0) {
+            return toast({
+              title: "Something went wrong",
+              description: "Please try again later",
+              variant: "destructive",
+            });
+          }
 
-        const [fileResponse] = res;
+          const [fileResponse] = res ?? [];
 
-        const key = fileResponse?.key;
-        if (!key) {
-          return toast({
-            title: "Something went wrong",
-            description: "Please try again later",
-            variant: "destructive",
-          });
-        }
+          const key = fileResponse?.key;
+          if (key === null || key === undefined || key === "") {
+            return toast({
+              title: "Something went wrong",
+              description: "Please try again later",
+              variant: "destructive",
+            });
+          }
 
-        clearInterval(progressInterval);
-        setUploadProgress(100);
+          clearInterval(progressInterval);
+          setUploadProgress(100);
 
-        startPolling({ key });
+          startPolling({ key });
+        })();
       }}
     >
       {({ getRootProps, getInputProps, acceptedFiles }) => (
@@ -100,7 +102,7 @@ const UploadDropzone = () => {
                 <p className="text-xs text-zinc-500">PDF (up to 4MB)</p>
               </div>
 
-              {acceptedFiles && acceptedFiles[0] ? (
+              {acceptedFiles.length > 0 ? (
                 <div className="max-w-xs bg-white flex items-center rounded-md overflow-hidden outline outline-[1px] outline-zinc-200 divide-x divide-zinc-200">
                   <div className="px-3 py02 h-full grid place-items-center">
                     <File className="h-4 w-4 text-blue-500" />
@@ -142,7 +144,7 @@ const UploadDropzone = () => {
   );
 };
 
-const UploadButton = () => {
+const UploadButton = (): JSX.Element => {
   const [isOpen, setIsOpen] = useState<boolean>(false);
 
   return (
@@ -154,7 +156,12 @@ const UploadButton = () => {
         }
       }}
     >
-      <DialogTrigger onClick={() => setIsOpen(true)} asChild>
+      <DialogTrigger
+        onClick={() => {
+          setIsOpen(true);
+        }}
+        asChild
+      >
         <Button>Upload PDF</Button>
       </DialogTrigger>
 
