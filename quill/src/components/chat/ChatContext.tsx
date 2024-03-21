@@ -51,11 +51,11 @@ export const ChatContextProvider = ({
         console.log("failed to send message here");
         throw new Error("Failed to send message");
       }
-      console.log(response.body);
+      // console.log(response.body);
       return response.body;
     },
     onMutate: async ({ message }) => {
-      console.log(message);
+      // console.log(message);
       backupMessage.current = message;
       setMessage("");
 

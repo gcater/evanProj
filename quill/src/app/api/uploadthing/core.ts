@@ -56,8 +56,8 @@ export const ourFileRouter: FileRouter = {
         const index = new Index({
           // todo figure out how to make mutliple indexes
 
-          url: `${process.env.UPSTASH_VECTOR_REST_URL}/${uniqueId}`,
-          // url: process.env.UPSTASH_VECTOR_REST_URL,
+          // url: `${process.env.UPSTASH_VECTOR_REST_URL}/${uniqueId}`,
+          url: process.env.UPSTASH_VECTOR_REST_URL,
           token: process.env.UPSTASH_VECTOR_REST_TOKEN,
         });
 
@@ -70,6 +70,7 @@ export const ourFileRouter: FileRouter = {
         });
         try {
           await upstashVector.addDocuments(pageLevelDocs);
+          console.log("MADE THE VECTORS!!!!");
         } catch (err) {
           console.error("Error generating or indexing embeddings:", err);
         }
