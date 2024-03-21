@@ -40,13 +40,16 @@ export const ChatContextProvider = ({
 
   const { mutate: sendMessage } = useMutation({
     mutationFn: async ({ message }: { message: string }) => {
-      const response = await fetch(`${process.env.SITE_URL}/api/message`, {
-        method: "POST",
-        body: JSON.stringify({
-          fileId,
-          message,
-        }),
-      });
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_SITE_URL}/api/message`,
+        {
+          method: "POST",
+          body: JSON.stringify({
+            fileId,
+            message,
+          }),
+        }
+      );
       if (!response.ok) {
         console.log("failed to send message here");
         throw new Error("Failed to send message");

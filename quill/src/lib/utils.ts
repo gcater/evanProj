@@ -10,11 +10,11 @@ export function absoluteUrl(path: string): string {
   if (typeof window !== "undefined") return path;
   // eslint-disable-next-line no-use-before-define
   if (
-    process.env?.VERCEL_URL !== null &&
+    process.env?.NEXT_PUBLIC_SITE_URL !== null &&
     // eslint-disable-next-line no-use-before-define
-    process.env?.VERCEL_URL !== undefined &&
+    process.env?.NEXT_PUBLIC_SITE_URL !== undefined &&
     // eslint-disable-next-line no-use-before-define
-    process.env?.VERCEL_URL !== ""
+    process.env?.NEXT_PUBLIC_SITE_URL !== ""
     // eslint-disable-next-line no-use-before-define
   )
     // return `http://localhost:3000`;
