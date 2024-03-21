@@ -37,7 +37,7 @@ export const appRouter = router({
   }),
   getUserFiles: privateProcedure.query(async ({ ctx }) => {
     const { userId } = ctx;
-    console.log("IN getuser files");
+    // console.log("IN getuser files");
     const files = await db.file.findMany({
       where: {
         userId,
@@ -93,7 +93,7 @@ export const appRouter = router({
         userId,
       },
     });
-    console.log(stripeSession.url);
+    // console.log(stripeSession.url);
     return { url: stripeSession.url };
   }),
 
@@ -119,7 +119,7 @@ export const appRouter = router({
 
       if (file === null || file === undefined)
         throw new TRPCError({ code: "NOT_FOUND" });
-
+      console.log(cursor, "this is cursor!");
       const messages = await db.message.findMany({
         take: limit + 1,
         where: {
@@ -128,8 +128,13 @@ export const appRouter = router({
         orderBy: {
           createdAt: "desc",
         },
-        //cursor type error!
-        cursor: cursor ? { id: cursor } : undefined,
+        // cursor type error! - original
+        // cursor: cursor ? { id: cursor } : undefined,
+
+        cursor:
+          cursor !== undefined && cursor !== null && cursor !== ""
+            ? { id: cursor }
+            : undefined,
         select: {
           id: true,
           isUserMessage: true,
@@ -137,13 +142,13 @@ export const appRouter = router({
           text: true,
         },
       });
-      console.log({ fileId }, "in getFileMessages");
+
       let nextCursor: typeof cursor | undefined;
+
       if (messages.length > limit) {
         const nextItem = messages.pop();
         nextCursor = nextItem?.id;
       }
-
       return {
         messages,
         nextCursor,
@@ -159,7 +164,7 @@ export const appRouter = router({
           userId: ctx.userId,
         },
       });
-      console.log(file, "this is file in TRPC");
+      // console.log(file, "this is file in TRPC");
 
       if (file !== null && file !== undefined)
         return { status: file.uploadStatus };

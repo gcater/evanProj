@@ -70,7 +70,7 @@ const PdfRenderer = ({ url }: PdfRendererProps): JSX.Element => {
     resolver: zodResolver(CustomPageValidator),
   });
 
-  const handlePageSubmit = ({ page }: TCustomPageValidator) => {
+  const handlePageSubmit = ({ page }: TCustomPageValidator): void => {
     setCurrPage(Number(page));
     setValue("page", String(page));
   };
@@ -96,11 +96,11 @@ const PdfRenderer = ({ url }: PdfRendererProps): JSX.Element => {
               {...register("page")}
               className={cn(
                 "w-12 h-8",
-                errors.page && "focus-visible:ring-red-500"
+                errors.page !== null && "focus-visible:ring-red-500"
               )}
               onKeyDown={(e) => {
                 if (e.key === "Enter") {
-                  handleSubmit(handlePageSubmit)();
+                  void handleSubmit(handlePageSubmit)();
                 }
               }}
             />
@@ -114,7 +114,7 @@ const PdfRenderer = ({ url }: PdfRendererProps): JSX.Element => {
             disabled={numPages === undefined || currPage === numPages}
             onClick={() => {
               setCurrPage((prev) =>
-                prev + 1 > numPages! ? numPages! : prev + 1
+                prev + 1 > (numPages ?? 0) ? 1 : prev + 1
               );
               setValue("page", String(currPage + 1));
             }}
@@ -133,23 +133,41 @@ const PdfRenderer = ({ url }: PdfRendererProps): JSX.Element => {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent>
-              <DropdownMenuItem onSelect={() => setScale(1)}>
+              <DropdownMenuItem
+                onSelect={() => {
+                  setScale(1);
+                }}
+              >
                 100%
               </DropdownMenuItem>
-              <DropdownMenuItem onSelect={() => setScale(1.5)}>
+              <DropdownMenuItem
+                onSelect={() => {
+                  setScale(1.5);
+                }}
+              >
                 150%
               </DropdownMenuItem>
-              <DropdownMenuItem onSelect={() => setScale(2)}>
+              <DropdownMenuItem
+                onSelect={() => {
+                  setScale(2);
+                }}
+              >
                 200%
               </DropdownMenuItem>
-              <DropdownMenuItem onSelect={() => setScale(2.5)}>
+              <DropdownMenuItem
+                onSelect={() => {
+                  setScale(2.5);
+                }}
+              >
                 250%
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
 
           <Button
-            onClick={() => setRotation((prev) => (prev + 90) % 360)}
+            onClick={() => {
+              setRotation((prev) => (prev + 90) % 360);
+            }}
             variant="ghost"
             aria-label="rotate 90 degrees"
           >
@@ -181,9 +199,9 @@ const PdfRenderer = ({ url }: PdfRendererProps): JSX.Element => {
               file={url}
               className="max-h-full"
             >
-              {isLoading && renderedScale ? (
+              {isLoading && renderedScale !== null ? (
                 <Page
-                  width={width ? width : 1}
+                  width={width ?? 1}
                   pageNumber={currPage}
                   scale={scale}
                   rotate={rotation}
@@ -192,7 +210,7 @@ const PdfRenderer = ({ url }: PdfRendererProps): JSX.Element => {
               ) : null}
               <Page
                 className={cn(isLoading ? "hidden" : "")}
-                width={width ? width : 1}
+                width={width ?? 1}
                 pageNumber={currPage}
                 scale={scale}
                 rotate={rotation}

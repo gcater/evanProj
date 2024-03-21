@@ -1,10 +1,18 @@
 "use client";
 import { useRouter, useSearchParams } from "next/navigation";
-import React, { useEffect } from "react";
+import React, { useEffect, Suspense } from "react";
 import { trpc } from "../_trpc/client";
 import { Loader2 } from "lucide-react";
 
 const Page = (): JSX.Element | null => {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <AuthCallbackContent />
+    </Suspense>
+  );
+};
+
+const AuthCallbackContent = (): JSX.Element | null => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const origin = searchParams.get("origin");
