@@ -1,5 +1,5 @@
-import React, { ReactElement } from "react";
-const ChatWrapper = () => {
+import React from "react";
+const ChatWrapper = (): JSX.Element => {
   return <div>ChatWrapper</div>;
 };
 

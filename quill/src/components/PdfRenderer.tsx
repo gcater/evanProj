@@ -15,7 +15,7 @@ import { useToast } from "./ui/use-toast";
 import { useResizeDetector } from "react-resize-detector";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
-import { useState } from "react";
+import React, { useState } from "react";
 
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -37,7 +37,7 @@ pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/$
 interface PdfRendererProps {
   url: string;
 }
-const PdfRenderer = ({ url }: PdfRendererProps) => {
+const PdfRenderer = ({ url }: PdfRendererProps): JSX.Element => {
   const { toast } = useToast();
 
   const { width, ref } = useResizeDetector();
@@ -53,7 +53,7 @@ const PdfRenderer = ({ url }: PdfRendererProps) => {
   const CustomPageValidator = z.object({
     page: z
       .string()
-      .refine((num) => Number(num) > 0 && Number(num) <= numPages!),
+      .refine((num) => Number(num) > 0 && Number(num) <= (numPages ?? 0)),
   });
 
   type TCustomPageValidator = z.infer<typeof CustomPageValidator>;

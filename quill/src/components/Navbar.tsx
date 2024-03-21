@@ -3,8 +3,9 @@ import MaxWisdthWrapper from "./MaxWidthWrapper";
 import { buttonVariants } from "./ui/button";
 import { LoginLink, RegisterLink } from "@kinde-oss/kinde-auth-nextjs/server";
 import { ArrowRight } from "lucide-react";
+import React from "react";
 
-const Navbar = () => {
+const Navbar = (): JSX.Element => {
   return (
     <nav className="sticky h-14 inset-x-0  top-0 z-30 w-full border-b border-gray-200 bg-white/75 backfrop-blur-lg transtion-all">
       <MaxWisdthWrapper>
@@ -21,23 +22,24 @@ const Navbar = () => {
                 className={buttonVariants({
                   variant: "ghost",
                   size: "sm",
-                })}>
+                })}
+              >
                 Pricing
               </Link>
               <LoginLink
-                className=
-                {buttonVariants({
+                className={buttonVariants({
                   variant: "ghost",
                   size: "sm",
-                })}>
+                })}
+              >
                 Sign in
               </LoginLink>
               <RegisterLink
-                className=
-                {buttonVariants({
+                className={buttonVariants({
                   size: "sm",
-                })}>
-                Get started <ArrowRight className='ml-1.5 h-5 w-5'/>
+                })}
+              >
+                Get started <ArrowRight className="ml-1.5 h-5 w-5" />
               </RegisterLink>
             </>
           </div>

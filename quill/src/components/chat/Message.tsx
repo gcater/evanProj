@@ -1,9 +1,9 @@
 import { cn } from "@/lib/utils";
-import { ExtendedMessage } from "@/types/message";
+import type { ExtendedMessage } from "@/types/message";
 import { Icons } from "../Icons";
 import ReactMarkdown from "react-markdown";
 import { format } from "date-fns";
-import { forwardRef } from "react";
+import React, { forwardRef } from "react";
 
 interface MessageProps {
   message: ExtendedMessage;
@@ -11,7 +11,7 @@ interface MessageProps {
 }
 
 const Message = forwardRef<HTMLDivElement, MessageProps>(
-  ({ message, isNextMessageSamePerson }, ref) => {
+  ({ message, isNextMessageSamePerson }, ref): JSX.Element => {
     return (
       <div
         ref={ref}

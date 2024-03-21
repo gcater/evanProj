@@ -1,11 +1,10 @@
 "use client";
-import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import React, { useEffect } from "react";
 import { trpc } from "../_trpc/client";
 import { Loader2 } from "lucide-react";
-import { useSearchParams } from "next/navigation";
 
-const Page = () => {
+const Page = (): JSX.Element | null => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const origin = searchParams.get("origin");
@@ -16,7 +15,7 @@ const Page = () => {
 
   // Handle successful query
   useEffect(() => {
-    if (data && data.success) {
+    if (data !== null && data?.success) {
       router.push(origin || "/dashboard");
     }
   }, [data, router]);

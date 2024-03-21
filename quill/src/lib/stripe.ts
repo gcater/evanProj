@@ -5,22 +5,31 @@ import { TRPCError } from "@trpc/server";
 import Stripe from "stripe";
 
 export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY ?? "", {
-  apiVersion: "2023-08-16",
+  // apiVersion: "2023-08-16",
   typescript: true,
 });
 
-export async function getUserSubscriptionPlan() {
+interface SubscriptionPlan {
+  stripeSubscriptionId?: string;
+  stripeCurrentPeriodEnd?: Date;
+  stripeCustomerId?: string;
+  isSubscribed: boolean;
+  isCanceled: boolean;
+  // Add other properties as needed
+}
+
+export async function getUserSubscriptionPlan(): Promise<SubscriptionPlan> {
   const { getUser } = getKindeServerSession();
   const user = await getUser();
 
-  if (!user) throw new TRPCError({ code: "UNAUTHORIZED" });
+  if (user === null) throw new TRPCError({ code: "UNAUTHORIZED" });
 
-  if (!user.id) {
+  if (user.id === null) {
     return {
       ...PLANS[0],
       isSubscribed: false,
       isCanceled: false,
-      stripeCurrentPeriodEnd: null,
+      stripeCurrentPeriodEnd: undefined,
     };
   }
 
@@ -30,18 +39,20 @@ export async function getUserSubscriptionPlan() {
     },
   });
 
-  if (!dbUser) {
+  if (dbUser === null) {
     return {
       ...PLANS[0],
       isSubscribed: false,
       isCanceled: false,
-      stripeCurrentPeriodEnd: null,
+      stripeCurrentPeriodEnd: undefined,
     };
   }
 
   const isSubscribed = Boolean(
-    dbUser.stripePriceId &&
-      dbUser.stripeCurrentPeriodEnd && // 86400000 = 1 day
+    dbUser.stripePriceId !== null &&
+      dbUser.stripePriceId !== "" &&
+      dbUser.stripeCurrentPeriodEnd !== null &&
+      // 86400000 = 1 day
       dbUser.stripeCurrentPeriodEnd.getTime() + 86_400_000 > Date.now()
   );
 
@@ -50,7 +61,11 @@ export async function getUserSubscriptionPlan() {
     : null;
 
   let isCanceled = false;
-  if (isSubscribed && dbUser.stripeSubscriptionId) {
+  if (
+    isSubscribed &&
+    dbUser.stripeSubscriptionId !== null &&
+    dbUser.stripeSubscriptionId !== ""
+  ) {
     const stripePlan = await stripe.subscriptions.retrieve(
       dbUser.stripeSubscriptionId
     );
@@ -59,9 +74,9 @@ export async function getUserSubscriptionPlan() {
 
   return {
     ...plan,
-    stripeSubscriptionId: dbUser.stripeSubscriptionId,
-    stripeCurrentPeriodEnd: dbUser.stripeCurrentPeriodEnd,
-    stripeCustomerId: dbUser.stripeCustomerId,
+    stripeSubscriptionId: dbUser.stripeSubscriptionId ?? undefined,
+    stripeCurrentPeriodEnd: dbUser.stripeCurrentPeriodEnd ?? undefined,
+    stripeCustomerId: dbUser.stripeCustomerId ?? undefined,
     isSubscribed,
     isCanceled,
   };
