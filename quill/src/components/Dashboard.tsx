@@ -7,9 +7,9 @@ import Skeleton from "react-loading-skeleton";
 import Link from "next/link";
 import { format } from "date-fns";
 import { Button } from "./ui/button";
-import { useState } from "react";
+import React, { useState } from "react";
 
-const Dashboard = () => {
+const Dashboard = (): JSX.Element => {
   const [currentlyDeleteingFile, setCurrentlyDeletingFile] = useState<
     string | null
   >(null);

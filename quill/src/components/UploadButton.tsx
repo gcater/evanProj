@@ -1,9 +1,8 @@
 "use client";
 
-import { useState } from "react";
 import { Button } from "./ui/button";
 import { Dialog, DialogContent, DialogTrigger } from "./ui/dialog";
-import React, { ReactElement } from "react";
+import React, { useState } from "react";
 import Dropzone from "react-dropzone";
 import { Cloud, File, Loader2 } from "lucide-react";
 import { Progress } from "./ui/progress";

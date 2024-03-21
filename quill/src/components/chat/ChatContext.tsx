@@ -1,16 +1,17 @@
-import { ReactNode, createContext, useRef, useState } from "react";
+import React, { createContext, useRef, useState } from "react";
+import type { ReactNode } from "react";
 import { useToast } from "../ui/use-toast";
 import { useMutation } from "@tanstack/react-query";
 import { trpc } from "@/app/_trpc/client";
 import { INFINITE_QUERY_LIMIT } from "@/config/infinite-query";
-import { Old_Standard_TT } from "next/font/google";
+// import { Old_Standard_TT } from "next/font/google";
 
-type StreamResponse = {
+interface StreamResponse {
   addMessage: () => void;
   message: string;
   handleInputChange: (event: React.ChangeEvent<HTMLTextAreaElement>) => void;
   isLoading: boolean;
-};
+}
 
 export const ChatContext = createContext<StreamResponse>({
   addMessage: () => {},
@@ -24,7 +25,10 @@ interface Props {
   children: ReactNode;
 }
 
-export const ChatContextProvider = ({ fileId, children }: Props) => {
+export const ChatContextProvider = ({
+  fileId,
+  children,
+}: Props): JSX.Element => {
   const [message, setMessage] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
@@ -68,13 +72,13 @@ export const ChatContextProvider = ({ fileId, children }: Props) => {
           limit: INFINITE_QUERY_LIMIT,
         },
         (old) => {
-          if (!old) {
+          if (old === null || old === undefined) {
             return { pages: [], pageParams: [] };
           }
 
-          let newPages = [...old.pages];
+          const newPages = [...old.pages];
 
-          let latestPage = newPages[0]!;
+          const latestPage = newPages[0];
 
           latestPage.messages = [
             {
@@ -105,7 +109,7 @@ export const ChatContextProvider = ({ fileId, children }: Props) => {
     onSuccess: async (stream) => {
       setIsLoading(false);
 
-      if (!stream) {
+      if (stream === null || stream === undefined) {
         return toast({
           title: "There was a problem sending this message",
           description: "Please refresh the page and try again",
@@ -127,20 +131,20 @@ export const ChatContextProvider = ({ fileId, children }: Props) => {
 
         accResponse += chunkValue;
 
-        //append chunk to the actual message
+        // append chunk to the actual message
         utils.getFileMessages.setInfiniteData(
           {
             fileId,
             limit: INFINITE_QUERY_LIMIT,
           },
           (old) => {
-            if (!old) {
+            if (old === null || old === undefined) {
               return { pages: [], pageParams: [] };
             }
-            let isAiResponseCreated = old.pages.some((page) =>
+            const isAiResponseCreated = old.pages.some((page) =>
               page.messages.some((message) => message.id === "ai-response")
             );
-            let updatedPages = old.pages.map((page) => {
+            const updatedPages = old.pages.map((page) => {
               if (page === old.pages[0]) {
                 let updatedMessages;
 
@@ -192,11 +196,15 @@ export const ChatContextProvider = ({ fileId, children }: Props) => {
     },
   });
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLTextAreaElement>
+  ): void => {
     setMessage(e.target.value);
   };
 
-  const addMessage = () => sendMessage({ message });
+  const addMessage = (): void => {
+    sendMessage({ message });
+  };
 
   return (
     <ChatContext.Provider

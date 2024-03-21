@@ -1,4 +1,6 @@
-import { LucideProps, User } from "lucide-react";
+import { User } from "lucide-react";
+import type { LucideProps } from "lucide-react";
+import React from "react";
 
 export const Icons = {
   user: User,

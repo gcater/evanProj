@@ -7,6 +7,7 @@ import { ChevronLeft, Loader2, XCircle } from "lucide-react";
 import Link from "next/link";
 import { buttonVariants } from "../ui/button";
 import { ChatContextProvider } from "./ChatContext";
+import React from "react";
 
 // import { PLANS } from '@/config/stripe'
 // here
@@ -14,7 +15,7 @@ interface ChatWrapperProps {
   fileId: string;
 }
 
-const ChatWrapper = ({ fileId }: ChatWrapperProps) => {
+const ChatWrapper = ({ fileId }: ChatWrapperProps): JSX.Element => {
   const { data, isLoading } = trpc.getFileUploadStatus.useQuery(
     {
       fileId,

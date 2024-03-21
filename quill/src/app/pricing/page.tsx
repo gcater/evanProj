@@ -13,8 +13,9 @@ import { ArrowRight, Check, HelpCircle, Minus } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
 import Link from "next/link";
 import UpgradeButton from "@/components/UpgradeButton";
+import React from "react";
 
-const Page = () => {
+const Page = (): JSX.Element => {
   const { getUser } = getKindeServerSession();
   const user = getUser();
 

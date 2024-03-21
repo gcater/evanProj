@@ -3,6 +3,7 @@ import PdfRenderer from "@/components/PdfRenderer";
 import { db } from "@/db";
 import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
 import { notFound, redirect } from "next/navigation";
+import React from "react";
 
 interface PageProps {
   params: {
@@ -10,14 +11,14 @@ interface PageProps {
   };
 }
 
-const Page = async ({ params }: PageProps) => {
+const Page = async ({ params }: PageProps): Promise<JSX.Element> => {
   // retrive fileid
   const { fileid } = params;
 
   const { getUser } = getKindeServerSession();
   const user = await getUser();
-  if (!user || !user.id) redirect("/auth-callback?origin=/dashboard/${fileid}");
-  //make database call
+  if (user?.id == null) redirect(`auth-callback?origin=/dashboard/${fileid}`);
+  // make database call
   const file = await db.file.findFirst({
     where: {
       id: fileid,
@@ -25,7 +26,7 @@ const Page = async ({ params }: PageProps) => {
     },
   });
 
-  if (!file) notFound();
+  if (file == null) notFound();
   return (
     <div className="flex-1 justify-between flex flex-col h-[calc(100h-3.5rem)]">
       <div className="mx-auto w-full max-w-8xl grow lg:flex xl:px-2">

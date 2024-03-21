@@ -4,13 +4,13 @@ import { Loader2, MessageSquare } from "lucide-react";
 import Skeleton from "react-loading-skeleton";
 import Message from "./Message";
 import { ChatContext } from "./ChatContext";
-import { useContext, useEffect, useRef } from "react";
+import React, { useContext, useEffect, useRef } from "react";
 import { useIntersection } from "@mantine/hooks";
 interface MessagesProps {
   fileId: string;
 }
 
-const Messages = ({ fileId }: MessagesProps) => {
+const Messages = ({ fileId }: MessagesProps): JSX.Element => {
   const { isLoading: isAiThinking } = useContext(ChatContext);
 
   const { data, isLoading, fetchNextPage } =
