@@ -19,7 +19,7 @@ export function absoluteUrl(path: string): string {
   )
     // return `http://localhost:3000`;
     // eslint-disable-next-line no-use-before-define
-    return `https://${process.env.VERCEL_URL}`;
+    return `https://${process.env.SITE_URL}`;
   // eslint-disable-next-line no-use-before-define
 
   return `http://localhost:3000`;
