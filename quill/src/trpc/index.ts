@@ -37,6 +37,7 @@ export const appRouter = router({
   }),
   getUserFiles: privateProcedure.query(async ({ ctx }) => {
     const { userId } = ctx;
+    console.log("IN getuser files");
     const files = await db.file.findMany({
       where: {
         userId,
@@ -115,6 +116,7 @@ export const appRouter = router({
           userId,
         },
       });
+
       if (file === null || file === undefined)
         throw new TRPCError({ code: "NOT_FOUND" });
 
@@ -126,7 +128,8 @@ export const appRouter = router({
         orderBy: {
           createdAt: "desc",
         },
-        cursor: cursor !== "" && cursor !== null ? { id: cursor } : undefined,
+        //cursor type error!
+        cursor: cursor ? { id: cursor } : undefined,
         select: {
           id: true,
           isUserMessage: true,
@@ -134,7 +137,7 @@ export const appRouter = router({
           text: true,
         },
       });
-
+      console.log({ fileId }, "in getFileMessages");
       let nextCursor: typeof cursor | undefined;
       if (messages.length > limit) {
         const nextItem = messages.pop();
@@ -156,10 +159,11 @@ export const appRouter = router({
           userId: ctx.userId,
         },
       });
+      console.log(file, "this is file in TRPC");
 
-      if (file === null || file === undefined)
-        return { status: "PENDING" as const };
-      return { status: file.uploadStatus };
+      if (file !== null && file !== undefined)
+        return { status: file.uploadStatus };
+      return { status: "PENDING" };
     }),
 
   getFile: privateProcedure

@@ -34,7 +34,7 @@ export const POST = async (req: NextRequest): Promise<Response> => {
     },
   });
 
-  console.log("HELLLOOOO I AM AT ROUTE");
+  // console.log("HELLLOOOO I AM AT ROUTE");
   if (file == null) return new Response("No file found", { status: 404 });
 
   await db.message.create({
@@ -55,7 +55,8 @@ export const POST = async (req: NextRequest): Promise<Response> => {
     url: process.env.UPSTASH_VECTOR_REST_URL,
     token: process.env.UPSTASH_VECTOR_REST_TOKEN,
   });
-
+  console.log(index);
+  console.log("we have index");
   const vectorStore = await UpstashVectorStore.fromExistingIndex(embeddings, {
     index,
   });
