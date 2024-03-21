@@ -40,7 +40,7 @@ export const ChatContextProvider = ({
 
   const { mutate: sendMessage } = useMutation({
     mutationFn: async ({ message }: { message: string }) => {
-      const response = await fetch("http://localhost:3000/api/message", {
+      const response = await fetch(`${process.env.SITE_URL}/api/message`, {
         method: "POST",
         body: JSON.stringify({
           fileId,
