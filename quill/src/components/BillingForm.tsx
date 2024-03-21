@@ -20,7 +20,7 @@ interface BillingFormProps {
   subscriptionPlan: Awaited<ReturnType<typeof getUserSubscriptionPlan>>;
 }
 
-const BillingForm = ({ subscriptionPlan }: BillingFormProps) => {
+const BillingForm = ({ subscriptionPlan }: BillingFormProps): JSX.Element => {
   const { toast } = useToast();
 
   const { mutate: createStripeSession, isLoading } =

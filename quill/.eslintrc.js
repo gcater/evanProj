@@ -6,6 +6,8 @@ module.exports ={
         'plugin:@next/next/recommended',
     ],
     "rules": {
+        // "no-any": false,
         "react/prop-types": "off",
+        
     }
 }

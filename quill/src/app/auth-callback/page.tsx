@@ -15,14 +15,14 @@ const Page = (): JSX.Element | null => {
 
   // Handle successful query
   useEffect(() => {
-    if (data !== null && data?.success) {
-      router.push(origin || "/dashboard");
+    if (data !== null && data?.success !== null) {
+      router.push(origin ?? "/dashboard");
     }
   }, [data, router]);
 
   // Handle query error
   useEffect(() => {
-    if (error && error.data?.code === "UNAUTHORIZED") {
+    if (error !== null && error.data?.code === "UNAUTHORIZED") {
       router.push("/sign-in");
     }
   }, [error, router]);

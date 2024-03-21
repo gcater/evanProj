@@ -19,7 +19,7 @@ const Dashboard = (): JSX.Element => {
 
   const { mutate: deleteFile } = trpc.deleteFile.useMutation({
     onSuccess: () => {
-      utils.getUserFiles.invalidate();
+      void utils.getUserFiles.invalidate();
     },
     onMutate({ id }) {
       setCurrentlyDeletingFile(id);
@@ -39,7 +39,7 @@ const Dashboard = (): JSX.Element => {
       </div>
 
       {/* display all user files */}
-      {files && files?.length !== 0 ? (
+      {files !== undefined && files?.length !== 0 ? (
         <ul className="mt-8 grid grid-cols-1 gap-6 divide-y divide-zinc-200 md:grid-cols-2 lg:grid-cols-3">
           {files
             .sort(
@@ -79,7 +79,9 @@ const Dashboard = (): JSX.Element => {
                   </div>
 
                   <Button
-                    onClick={() => deleteFile({ id: file.id })}
+                    onClick={() => {
+                      deleteFile({ id: file.id });
+                    }}
                     size="sm"
                     className="w-full"
                     variant="destructive"

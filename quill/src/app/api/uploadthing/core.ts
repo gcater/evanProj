@@ -30,6 +30,7 @@ export const ourFileRouter: FileRouter = {
       return { userId: user.id };
     })
     .onUploadComplete(async ({ metadata, file }) => {
+      const uniqueId = metadata.userId + file.key;
       const createdFile = await db.file.create({
         data: {
           key: file.key,
@@ -53,7 +54,10 @@ export const ourFileRouter: FileRouter = {
         // vecotrize and index entire docu;
 
         const index = new Index({
-          url: process.env.UPSTASH_VECTOR_REST_URL,
+          // todo figure out how to make mutliple indexes
+
+          url: `${process.env.UPSTASH_VECTOR_REST_URL}/${uniqueId}`,
+          // url: process.env.UPSTASH_VECTOR_REST_URL,
           token: process.env.UPSTASH_VECTOR_REST_TOKEN,
         });
 

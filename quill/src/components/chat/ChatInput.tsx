@@ -8,7 +8,7 @@ interface ChatInputProps {
   isDisabled?: boolean;
 }
 
-const ChatInput = ({ isDisabled }: ChatInputProps) => {
+const ChatInput = ({ isDisabled }: ChatInputProps): JSX.Element => {
   const { addMessage, message, handleInputChange, isLoading } =
     useContext(ChatContext);
 

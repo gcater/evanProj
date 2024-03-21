@@ -16,15 +16,13 @@ interface ChatWrapperProps {
 }
 
 const ChatWrapper = ({ fileId }: ChatWrapperProps): JSX.Element => {
-  const { data, isLoading } = trpc.getFileUploadStatus.useQuery(
-    {
-      fileId,
-    },
-    {
-      refetchInterval: status === "success" || status === "error" ? false : 500,
-    }
-  );
-  console.log(data);
+  console.log({ fileId });
+  // TODO: resend if not acomplished !!
+  const { data, isLoading } = trpc.getFileUploadStatus.useQuery({ fileId });
+
+  // console.log(data, "this is data");
+  // console.log("hit here!");
+
   if (isLoading)
     return (
       <div className="relative min-h-full bg-zinc-50 flex divide-y divide-zinc-200 flex-col justify-between gap-2">
@@ -93,7 +91,7 @@ const ChatWrapper = ({ fileId }: ChatWrapperProps): JSX.Element => {
         <ChatInput isDisabled />
       </div>
     );
-
+  console.log("AT SUCCESSS");
   return (
     <ChatContextProvider fileId={fileId}>
       <div className="relative min-h-full bg-zinc-50 flex divide-y divide-zinc-200 flex-col justify-between gap-2">
